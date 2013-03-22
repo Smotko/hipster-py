@@ -4,7 +4,6 @@ from pygame.time import Clock
 from random import random
 
 # INIT:
-
 pygame.init()
 
 clock = Clock()
@@ -13,7 +12,7 @@ WIDTH  = 640
 HEIGHT = 480 
 
 score = 0
-game_state = 'GAME'
+game_state = 'MENU'
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Hipster Py")
@@ -28,7 +27,6 @@ background = pygame.Surface(screen.get_size())
 background = background.convert()
 background.fill((250, 250, 250))
 
-font = pygame.font.Font(None, 36)
 class AnimatedSprite(pygame.sprite.Sprite):
     def __init__(self, filename, num_anims, fps = 10):
         pygame.sprite.Sprite.__init__(self)
@@ -66,7 +64,8 @@ class HipsterSprite(AnimatedSprite):
         self.rect.centery += delta * ENEMY_MOVE_FACTOR
 
         if self.rect.top > HEIGHT: 
-            pass
+            global game_state
+            game_state = 'MENU'
 
         if self.rect.colliderect(superman.rect.inflate(-128, -128)):
             global score
@@ -82,19 +81,41 @@ class SupermanSprite(AnimatedSprite):
         self.rect.centerx += self.direction[0] * delta
         self.rect.centery += self.direction[1] * delta
         
+        if self.rect.left < 0:
+            self.rect.left = 0
+        elif self.rect.right > WIDTH:
+            self.rect.right = WIDTH
+        if self.rect.top < 0:
+            self.rect.top = 0
+        elif self.rect.bottom > HEIGHT:
+            self.rect.bottom = HEIGHT
+        
             
 explosion = AnimatedSprite("explosion.png", 7)
-explosion.rect.center = (-100, -100)
+explosion.rect.center = (-100, -100) # Hide it out of view
 superman = SupermanSprite("superman.png", 1)
 superman.rect.midbottom = (WIDTH/2, HEIGHT)
 hipster = HipsterSprite("hipster.png", 3)
+
 all_sprites = pygame.sprite.RenderPlain((explosion,hipster,superman))
+
+def reset():
+    global score
+    score = 0
+    explosion.rect.center = (-100, -100) # Hide it out of view
+    superman.rect.midbottom = (WIDTH/2, HEIGHT)
+    hipster.rect.bottom = 0
+    hipster.rect.centerx = WIDTH/2
 
 # INPUT:
 
 def input_key_down(key):
     if key == K_ESCAPE: 
         sys.exit(0)
+    global game_state
+    if game_state == 'MENU':
+        reset()
+        game_state = 'GAME'
     for i,k in enumerate([K_LEFT, K_UP, K_RIGHT, K_DOWN]):
         if key == k:
             superman.direction[i%2] += 1 * (0.1+i-2)/abs(0.1+i-2)
@@ -114,31 +135,35 @@ def input(events):
             input_key_down(event.key)
 
 def draw_menu():
-    font = pygame.font.Font(None, 42)
-    text = font.render("Hipster py", 1, (10, 10, 10))
+    font = pygame.font.Font(None, 82)
+    text = font.render("Hipster Py", 1, (10, 10, 10))
     textpos = text.get_rect()
     textpos.centerx = background.get_rect().centerx
     textpos.centery = background.get_rect().centery
     screen.blit(text, textpos)
+    
+    font = pygame.font.Font(None, 42)
+    text = font.render("Press any key to start", 1, (10,10,10))
+    textpos = text.get_rect()
+    textpos.centerx = background.get_rect().centerx
+    textpos.bottom = background.get_rect().bottom
+    screen.blit(text, textpos) 
 
 def draw_score():
     font = pygame.font.Font(None, 42)
     text = font.render(str(score), 1, (10, 10, 10))
     textpos = text.get_rect()
-    textpos.centerx = background.get_rect().centerx
+    textpos.right = background.get_rect().right-10
     screen.blit(text, textpos)
-    
 
 def draw():
     screen.blit(background, (0,0))
     draw_score()
-    print game_state
     if game_state == 'GAME':
         all_sprites.draw(screen)
     if game_state == 'MENU':
         draw_menu()
-
-    screen.blit(background, (0,0))
+    
     pygame.display.flip()
 
 # GAME LOOP
