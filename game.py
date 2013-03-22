@@ -13,6 +13,7 @@ WIDTH  = 640
 HEIGHT = 480 
 
 score = 0
+game_state = 'GAME'
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Hipster Py")
@@ -31,7 +32,6 @@ font = pygame.font.Font(None, 36)
 class AnimatedSprite(pygame.sprite.Sprite):
     def __init__(self, filename, num_anims, fps = 10):
         pygame.sprite.Sprite.__init__(self)
-        
         
         self._images = self._create_images(filename, num_anims)
         self._start = pygame.time.get_ticks()
@@ -113,6 +113,13 @@ def input(events):
         elif event.type == KEYDOWN:
             input_key_down(event.key)
 
+def draw_menu():
+    font = pygame.font.Font(None, 42)
+    text = font.render("Hipster py", 1, (10, 10, 10))
+    textpos = text.get_rect()
+    textpos.centerx = background.get_rect().centerx
+    textpos.centery = background.get_rect().centery
+    screen.blit(text, textpos)
 
 def draw_score():
     font = pygame.font.Font(None, 42)
@@ -124,8 +131,14 @@ def draw_score():
 
 def draw():
     screen.blit(background, (0,0))
-    all_sprites.draw(screen)
     draw_score()
+    print game_state
+    if game_state == 'GAME':
+        all_sprites.draw(screen)
+    if game_state == 'MENU':
+        draw_menu()
+
+    screen.blit(background, (0,0))
     pygame.display.flip()
 
 # GAME LOOP
