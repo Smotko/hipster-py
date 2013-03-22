@@ -15,11 +15,11 @@ HEIGHT = 480
 score = 0
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pygame!")
+pygame.display.set_caption("Hipster Py")
 screen = pygame.display.get_surface()
 
 PLAYER_MOVE_FACTOR = 1
-ENEMY_MOVE_FACTOR  = 1
+ENEMY_MOVE_FACTOR  = 0.6
 
 # SPRITES:
 
@@ -62,7 +62,8 @@ class AnimatedSprite(pygame.sprite.Sprite):
 class HipsterSprite(AnimatedSprite):
     def update(self, delta):
         AnimatedSprite.update(self, delta)
-        self.rect.centery += ENEMY_MOVE_FACTOR
+        
+        self.rect.centery += delta * ENEMY_MOVE_FACTOR
 
         if self.rect.top > HEIGHT: 
             pass
@@ -78,8 +79,8 @@ class SupermanSprite(AnimatedSprite):
     
     def update(self, delta):
         AnimatedSprite.update(self, delta)
-        self.rect.centerx += self.direction[0] * delta * PLAYER_MOVE_FACTOR
-        self.rect.centery += self.direction[1] * delta * PLAYER_MOVE_FACTOR
+        self.rect.centerx += self.direction[0] * delta
+        self.rect.centery += self.direction[1] * delta
         
             
 explosion = AnimatedSprite("explosion.png", 7)
@@ -112,24 +113,23 @@ def input(events):
         elif event.type == KEYDOWN:
             input_key_down(event.key)
 
-# UPDATE: 
-def update(delta):
-    # move the hipster
-    all_sprites.update(delta)
-    # DRAW: 
 
-
-def draw():
-    screen.blit(background, (0,0))
-    all_sprites.draw(screen)
+def draw_score():
     font = pygame.font.Font(None, 42)
     text = font.render(str(score), 1, (10, 10, 10))
     textpos = text.get_rect()
     textpos.centerx = background.get_rect().centerx
     screen.blit(text, textpos)
+    
+
+def draw():
+    screen.blit(background, (0,0))
+    all_sprites.draw(screen)
+    draw_score()
     pygame.display.flip()
 
+# GAME LOOP
 while True:
     input(pygame.event.get())
-    update(clock.tick())
+    all_sprites.update(clock.tick())
     draw()
